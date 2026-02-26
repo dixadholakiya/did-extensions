@@ -242,7 +242,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For questions and support, please contact the development team at:
 - **Email**: dixadholakiya@gmail.com
 - **GitHub**: https://github.com/pqie/framework
-- **Documentation**: https://docs.pqie.network
 
 ---
 

@@ -390,5 +390,4 @@ The `did:pqie` method defines the following custom JSON-LD context:
 
 For technical inquiries or submission feedback, please contact the PQIE Research Group at:
 - **Email:** dixadholakiya@gmail.com
-- **Website:** [https://pqie.network](https://pqie.network)
 - **Support:** [dixadholakiya@gmail.com](mailto:dixadholakiya@gmail.com)
