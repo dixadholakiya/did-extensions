@@ -383,3 +383,12 @@ The `did:pqie` method defines the following custom JSON-LD context:
 - [NIST PQC Standards](https://csrc.nist.gov/projects/post-quantum-cryptography)
 - [Ring-LWE Problem Analysis](https://eprint.iacr.org/2012/230)
 - [PQIE: A Ledger‑Agnostic Framework for Secure DIDs](https://pqie.network/papers/pqie-framework.pdf)
+
+---
+
+## 14. Contact
+
+For technical inquiries or submission feedback, please contact the PQIE Research Group at:
+- **Email:** dixadholakiya@gmail.com
+- **Website:** [https://pqie.network](https://pqie.network)
+- **Support:** [dixadholakiya@gmail.com](mailto:dixadholakiya@gmail.com)
