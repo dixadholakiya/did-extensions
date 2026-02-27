@@ -286,6 +286,16 @@ Implementers are strongly encouraged to review the following:
 - The Privacy Considerations section of the DID Implementation Guide: https://w3c.github.io/did-imp-guide/#privacy-considerations.
 - The Privacy Considerations section of the Decentralized Identifiers (DIDs) (DID-CORE) specification: https://www.w3.org/TR/did-core/#privacy-considerations.
 
+### 2.7 The Ledger-Agnostic Property
+A core innovation of the PQIE framework is its natively **ledger-agnostic** architecture. Because the entirety of the DID Document is encapsulated within a Ring-LWE KEM Digital Envelope *before* transmission, the resulting cryptographic payload (or its hash pointer) can be securely written to **any** underlying distributed ledger technology (DLT) or key-value store. 
+
+This means `did:pqie` is not locked to a specific blockchain. The method natively abstracts the storage layer via a Ledger-Agnostic Interface (Layer E), allowing implementations to anchor identities on:
+- **Permissioned identity ledgers** (e.g., Hyperledger Indy)
+- **Public smart contracts** (e.g., Ethereum, Polygon via EVM mappings)
+- **Decentralized file configurations** (e.g., IPFS + Filecoin combinations)
+
+Verifiers and resolvers simply fetch the on-chain payload $P$ via the respective ledger adapter and proceed with standard decapsulation and signature verification, entirely decoupled from the consensus mechanism or tokenomics of the underlying host chain.
+
 ## 3. Future Scope: PQIE in Web 3.0
 Because PQIE is ledger-agnostic, it can plug into diverse Web 3.0 runtimes. DeFi platforms can embed quantum-safe KYC proofs, healthcare networks can share encrypted patient IDs across hospitals, supply-chain consortia can bind tamper-proof product DIDs to digital twins, and metaverse environments can issue long-lived, privacy-preserving avatar credentials.
 In enterprise settings, PQIE can underpin cross-jurisdictional e-KYC: banks anchor encrypted customer DIDs on a consortium chain and regulators decrypt only when a court order is provided, achieving privacy by default.
