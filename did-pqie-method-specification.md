@@ -116,25 +116,25 @@ entropy-suffix = 8HEXDIG
 
 ### 5.2 Identifier Generation Algorithm
 
-1. **Attribute Lifting**: Map attributes to polynomial $A(x) \in \mathbb{Z}_q[x]/(x^n + 1)$ with Gaussian noise $e$.
-2. **NTT Domain Mapping**: Apply Number-Theoretic Transform (NTT) to convert coefficients for efficient convolution: $A_{ntt} = NTT(A)$.
-3. **Binding Transform**: Bind attributes to public key $pk_{ntt}$ via coefficient-wise multiplication: $R_{ntt} = A_{ntt} \otimes pk_{ntt}$.
-4. **Side-Channel Protection**: Apply pointwise `tanh` activation to disrupt linear patterns: $c_i' = \tanh(\kappa \cdot c_i)$.
+1. **Attribute Lifting**: Map attributes to polynomial A(x) in Z_q[x]/(x^n + 1) with Gaussian noise e.
+2. **NTT Domain Mapping**: Apply Number-Theoretic Transform (NTT) to convert coefficients for efficient convolution: A_ntt = NTT(A).
+3. **Binding Transform**: Bind attributes to public key pk_ntt via coefficient-wise multiplication: R_ntt = A_ntt * pk_ntt.
+4. **Side-Channel Protection**: Apply pointwise `tanh` activation to disrupt linear patterns: c_i' = tanh(k * c_i).
 5. **Dual-Hash Generation**: Compute primary (SHA3-512) and secondary (Blake2b) digests from the processed result to form the DID string.
 
 ---
 
 ## 6. Cryptographic Elements
-All did:pqie operations are run over ideal lattices in $R_q = \mathbb{Z}_q[x]/(x^n + 1)$ where n=512 and q=24593.
+All did:pqie operations are run over ideal lattices in R_q = Z_q[x]/(x^n + 1) where n=512 and q=24593.
 
 ### 6.1 Key Pair Generation (Ring-LWE)
-Secret Key ($s$) is sampled from a discrete Gaussian ($\sigma \approx 4.0$). Public Key ($pk$) is compute as $(a, c = a \cdot s + e \pmod{q})$.
+Secret Key (s) is sampled from a discrete Gaussian (sigma ≈ 4.0). Public Key (pk) is computed as (a, c = a * s + e mod q).
 
 ### 6.2 PQIE Digital Envelope
-Encrypted-by-default via hybrid KEM/AEAD. Shared Secret $SS = KEM(sk, kem)$. Ciphertext $CT = AES-GCM(SS, Doc)$. Multiplications are accelerated via NTT ($O(n \log n)$).
+Encrypted-by-default via hybrid KEM/AEAD. Shared Secret SS = KEM(sk, kem). Ciphertext CT = AES-GCM(SS, Doc). Multiplications are accelerated via NTT (O(n log n)).
 
 ### 6.3 Lattice Signature
-Fiat-Shamir-with-abort: $z = y + c \cdot s$. Verification: $A \cdot z - c \cdot pk \approx t$. A unique noise-reduction step ($O(\log q)$) keeps the response within spectral bounds.
+Fiat-Shamir-with-abort: z = y + c * s. Verification: A * z - c * pk ≈ t. A unique noise-reduction step (O(log q)) keeps the response within spectral bounds.
 
 ---
 
