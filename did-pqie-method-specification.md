@@ -125,30 +125,16 @@ entropy-suffix = 8HEXDIG
 ---
 
 ## 6. Cryptographic Elements
-
-All `did:pqie` operations are run over ideal lattices in $R_q = \mathbb{Z}_q[x]/(x^n + 1)$ where $n=512$ and $q=24593$.
+All did:pqie operations are run over ideal lattices in $R_q = \mathbb{Z}_q[x]/(x^n + 1)$ where n=512 and q=24593.
 
 ### 6.1 Key Pair Generation (Ring-LWE)
+Secret Key ($s$) is sampled from a discrete Gaussian ($\sigma \approx 4.0$). Public Key ($pk$) is compute as $(a, c = a \cdot s + e \pmod{q})$.
 
-1. **Secret Key ($s$):** Sampled from a zero-centered discrete Gaussian distribution $\sigma \approx 4.0$.
-2. **Public Key ($pk$):** Generate uniform $a \in R_q$. Compute $pk = (a, c = a \cdot s + e \pmod{q})$.
-3. **Hardness:** Recovering $s$ from $(a, c)$ is as hard as the Shortest Vector Problem (SVP) in cyclotomic lattices.
+### 6.2 PQIE Digital Envelope
+Encrypted-by-default via hybrid KEM/AEAD. Shared Secret $SS = KEM(sk, kem)$. Ciphertext $CT = AES-GCM(SS, Doc)$. Multiplications are accelerated via NTT ($O(n \log n)$).
 
-### 6.2 PQIE Digital Envelope (Encryption)
-
-All `did:pqie` documents are stored as encrypted blobs via a hybrid KEM/AEAD scheme:
-1. **SS = KEM(pk)**: Encapsulate shared secret using Ring-LWE KEM.
-2. **NTT Domain Ops**: Polynomial multiplications are performed in the NTT domain ($O(n \log n)$) for efficiency.
-3. **CT = AES-GCM(SS, Doc)**: The JSON-LD DID Document is encrypted with the derived shared secret.
-
-### 6.3 Lattice Signature (Authentication)
-
-PQIE uses a fiat-shamir-with-abort style signature to ensure authenticity:
-1. **Commitment**: Multiply public generator $A$ by fresh random polynomial $y$ (small coefficients). $t = A \cdot y$.
-2. **Challenge ($c$):** Hash the document digest and $t$ to form a sparse polynomial $c \in \{-1, 0, 1\}^n$.
-3. **Response ($z$):** Compute $z = y + c \cdot s$.
-4. **Noise Reduction**: Apply modular inversion (Complexity $O(\log q)$) to keep $z$ within safe spectral bounds.
-5. **Verification**: Confirm $A \cdot z - c \cdot pk \approx t$. If the resulting hash matches the challenge $c$ and $\|z\|$ is small, the signature is VALID.
+### 6.3 Lattice Signature
+Fiat-Shamir-with-abort: $z = y + c \cdot s$. Verification: $A \cdot z - c \cdot pk \approx t$. A unique noise-reduction step ($O(\log q)$) keeps the response within spectral bounds.
 
 ---
 
