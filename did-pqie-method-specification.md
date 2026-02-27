@@ -116,25 +116,25 @@ entropy-suffix = 8HEXDIG
 
 ### 5.2 Identifier Generation Algorithm
 
-1. **Attribute Lifting**: Map attributes to polynomial A(x) in Z_q[x]/(x^n + 1) with Gaussian noise e.
-2. **NTT Domain Mapping**: Apply Number-Theoretic Transform (NTT) to convert coefficients for efficient convolution: A_ntt = NTT(A).
-3. **Binding Transform**: Bind attributes to public key pk_ntt via coefficient-wise multiplication: R_ntt = A_ntt * pk_ntt.
-4. **Side-Channel Protection**: Apply pointwise `tanh` activation to disrupt linear patterns: c_i' = tanh(k * c_i).
-5. **Dual-Hash Generation**: Compute primary (SHA3-512) and secondary (Blake2b) digests from the processed result to form the DID string.
+1. **Attribute Lifting**: Map attributes to a polynomial with Gaussian noise.
+2. **NTT Domain Mapping**: Apply Number-Theoretic Transform to convert coefficients for efficient convolution.
+3. **Binding Transform**: Bind attributes to the public key via coefficient-wise multiplication.
+4. **Side-Channel Protection**: Apply pointwise hyperbolic tangent activation to disrupt linear patterns.
+5. **Dual-Hash Generation**: Compute primary SHA3-512 and secondary Blake2b digests from the processed result to form the DID string.
 
 ---
 
 ## 6. Cryptographic Elements
-All did:pqie operations are run over ideal lattices in R_q = Z_q[x]/(x^n + 1) where n=512 and q=24593.
+All did:pqie operations are run over ideal lattices with a dimension of 512 and a modulus of 24593.
 
 ### 6.1 Key Pair Generation (Ring-LWE)
-Secret Key (s) is sampled from a discrete Gaussian (sigma ≈ 4.0). Public Key (pk) is computed as (a, c = a * s + e mod q).
+The Secret Key is sampled from a discrete Gaussian distribution. The Public Key is computed by multiplying a random polynomial by the secret key, adding error, and taking the result modulo the modulus.
 
 ### 6.2 PQIE Digital Envelope
-Encrypted-by-default via hybrid KEM/AEAD. Shared Secret SS = KEM(sk, kem). Ciphertext CT = AES-GCM(SS, Doc). Multiplications are accelerated via NTT (O(n log n)).
+Encrypted-by-default via hybrid KEM and AEAD. The Shared Secret is obtained via the Key Encapsulation Mechanism. The Ciphertext is generated using AES-GCM encryption over the document with the shared secret. Multiplications are accelerated via Number-Theoretic Transforms.
 
 ### 6.3 Lattice Signature
-Fiat-Shamir-with-abort: z = y + c * s. Verification: A * z - c * pk ≈ t. A unique noise-reduction step (O(log q)) keeps the response within spectral bounds.
+The signature is generated using Fiat-Shamir with abort. The response is calculated by adding the commitment mask to the product of the challenge and the secret key. Verification confirms that the public generator multiplied by the response minus the challenge multiplied by the public key approximately equals the original commitment. A unique noise-reduction step keeps the response within spectral bounds.
 
 ---
 
