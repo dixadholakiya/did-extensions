@@ -4,6 +4,5 @@
     "specification": "https://dixadholakiya.github.io/pqie-did-spec/",
     "contactName": "PQIE Research Group",
     "contactEmail": "dixadholakiya@gmail.com",
-    "contactWebsite": "https://pqie.network",
     "verifiableDataRegistry": "Hyperledger Indy + IPFS"
 }
