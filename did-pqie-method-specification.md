@@ -329,6 +329,23 @@ However, during active sessions (especially regarding Verifiable Credentials tha
 - After roughly 128 cryptographic operations, for every polynomial coefficient $c_i$, we compute $c_i' = (c_i \pmod{q/4})$ and set the new operating modulus $q \leftarrow q/4$. 
 - This step acts as a refreshing mechanism, aggressively keeping the encrypted DID payload size statically beneath 2 kB, minimizing overall ledger storage costs without ever exposing underlying data or weakening the lattice bound.
 
+## 5. Integration & Tools
+
+### 5.1 PQIE Ecosystem Tools
+
+The PQIE infrastructure provides a comprehensive suite of tools for identity management:
+
+- **PQIE CLI**: A command-line interface for administrators to directly interact with the underlying ledger, generate post-quantum keys, and issue credentials.
+- **RESTful API**: A robust set of HTTP endpoints for client applications to trigger wallet operations, verify VCs, and request identity tokens.
+- **PQIE Public Resolver**: A high-performance public resolution service designed to provide sub-10ms resolution for valid `did:pqie` identifiers.
+
+### 5.2 DIDComm v2 Support
+
+The `did:pqie` method is fully compatible with the **DIDComm Messaging v2** protocol:
+- PQIE DID Documents natively support multiple key types alongside the Lattice keys, including `X25519KeyAgreementKey2019` for DIDComm envelope encryption if required by legacy systems.
+- Service endpoints in the `did:pqie` document can declare DIDComm messaging transport paths natively.
+- This allows secure, peer-to-peer exchange of Verifiable Credentials seamlessly across systems while maintaining the post-quantum envelope for the DID itself.
+
 ## References
 - https://w3c-ccg.github.io/did-spec/
 - https://www.w3.org/TR/did-core/
