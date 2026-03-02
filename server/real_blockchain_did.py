@@ -340,16 +340,21 @@ class RealBlockchainDIDManager:
                 print(f"✅ Fallback IPFS upload successful: {ipfs_hash}")
                 return ipfs_hash
             else:
-                # If IPFS utility fails, create a proper CID format
+                # If IPFS utility fails, create a proper V0 CID format (Base58 multihash)
+                import base58
                 data_str = json.dumps(data, sort_keys=True)
-                hash_obj = hashlib.sha256(data_str.encode())
-                return f"Qm{hash_obj.hexdigest()[:44]}"
+                hash_bytes = hashlib.sha256(data_str.encode()).digest()
+                # SHA-256 multihash prefix: 0x12 (sha2) 0x20 (32 bytes)
+                multihash = b'\x12\x20' + hash_bytes
+                return base58.b58encode(multihash).decode('utf-8')
         except Exception as e:
             print(f"❌ Fallback IPFS upload failed: {e}")
             # Create a proper CID format as last resort
+            import base58
             data_str = json.dumps(data, sort_keys=True)
-            hash_obj = hashlib.sha256(data_str.encode())
-            return f"Qm{hash_obj.hexdigest()[:44]}"
+            hash_bytes = hashlib.sha256(data_str.encode()).digest()
+            multihash = b'\x12\x20' + hash_bytes
+            return base58.b58encode(multihash).decode('utf-8')
     
     async def write_to_indy_ledger(self, transaction: Dict[str, Any]) -> str:
         """Write transaction to Indy ledger using actual Rust core"""

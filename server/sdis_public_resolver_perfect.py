@@ -154,11 +154,11 @@ class SDISPublicResolver:
                     'error': f'DID length must be between {MIN_DID_LENGTH} and {MAX_DID_LENGTH} characters'
                 }
             
-            # Check if it starts with did:sdis:
-            if not did.startswith("did:sdis:"):
+            # Check if it starts with did:sdis: or did:pqie:
+            if not (did.startswith("did:sdis:") or did.startswith("did:pqie:")):
                 return {
                     'valid': False,
-                    'error': 'DID must start with "did:sdis:"'
+                    'error': 'DID must start with "did:sdis:" or "did:pqie:"'
                 }
             
             # Split and validate components
@@ -166,14 +166,14 @@ class SDISPublicResolver:
             if len(parts) != 4:
                 return {
                     'valid': False,
-                    'error': 'DID must have exactly 4 components: did:sdis:primary_hash:secondary_hash'
+                    'error': 'DID must have exactly 4 components: did:method:primary_hash:secondary_hash'
                 }
             
             # Validate method name
-            if parts[1] != "sdis":
+            if parts[1] not in ["sdis", "pqie"]:
                 return {
                     'valid': False,
-                    'error': 'Invalid method name. Must be "sdis"'
+                    'error': 'Invalid method name. Must be "sdis" or "pqie"'
                 }
             
             # Validate hash formats

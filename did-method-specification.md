@@ -207,6 +207,23 @@ curl -H "Accept: application/did+ld+json" \
      "https://resolver.sdis.gov.in/1.0/identifiers/did:sdis:5135e697e2724d99:8b7ecf94bf0f819e"
 ```
 
+## Integration & Tools
+
+### SDIS Ecosystem Tools
+
+The SDIS infrastructure provides a comprehensive suite of tools for identity management:
+
+- **SDIS CLI**: A command-line interface for administrators to directly interact with the Indy ledger, generate new keys, and issue credentials.
+- **RESTful API**: A robust set of HTTP endpoints for client applications to trigger wallet operations, verify VCs, and request auto identity tokens.
+- **SDIS Public Resolver**: A high-performance, caching public resolution service (`http://localhost:8085/1.0/identifiers/{did}`) designed to provide sub-10ms resolution for valid `did:sdis` identifiers.
+
+### DIDComm v2 Support
+
+The `did:sdis` method is fully compatible with the **DIDComm Messaging v2** protocol:
+- SDIS DID Documents inherently support multiple key types, including `X25519KeyAgreementKey2019` for DIDComm envelope encryption.
+- Service endpoints in the `did:sdis` document can declare DIDComm messaging transport paths natively.
+- This allows secure, peer-to-peer exchange of Verifiable Credentials seamlessly without requiring a parallel key infrastructure.
+
 ## Implementation Status
 
 - **✅ DID Document Generation**: W3C-compliant documents

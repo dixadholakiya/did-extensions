@@ -207,20 +207,36 @@ class GovernmentPortalServer:
             limit = int(request.query.get('limit', 20))  # Default 20 requests per page
             status_filter = request.query.get('status', '')  # Filter by status
             
-            # Get all Aadhaar requests (both pending and approved)
+            # Get all Aadhaar requests and merge with Unified Ledger
             all_requests = []
             
+            # 1. Start with known requests from memory/aadhaar_requests.json
             for request_id, req_data in self.aadhaar_requests.items():
                 # Apply status filter
                 if status_filter and req_data['status'] != status_filter:
                     continue
                 
-                # Generate verifiable credential hash
-                vc_hash, credential_data = self.generate_verifiable_credential_hash(
-                    req_data['citizen_did'],
-                    req_data['aadhaar_number'],
-                    req_data['otp']
-                )
+                # Check for existing credential in unified ledger for this DID
+                unified_creds = await self.unified_vc_ledger.get_credentials_by_did(req_data['citizen_did'])
+                matching_cred = next((c for c in unified_creds if c.get('credential_type') == 'AADHAAR_KYC'), None)
+                
+                vc_hash = None
+                credential_data = None
+                
+                if matching_cred:
+                    vc_hash = matching_cred.get('hash') or matching_cred.get('id')
+                    credential_data = matching_cred.get('credential_data')
+                    # Sync status if needed
+                    if matching_cred.get('status') == 'REVOKED':
+                        req_data['status'] = 'REVOKED'
+                        req_data['revoked_at'] = matching_cred.get('revoked_at')
+                else:
+                    # Fallback to local generation if approved
+                    vc_hash, credential_data = self.generate_verifiable_credential_hash(
+                        req_data['citizen_did'],
+                        req_data['aadhaar_number'],
+                        req_data['otp']
+                    )
                 
                 request_info = {
                     'request_id': request_id,
@@ -236,14 +252,13 @@ class GovernmentPortalServer:
                         'credential_type': 'AADHAAR_KYC',
                         'issuer': 'GOVERNMENT_OF_INDIA',
                         'issued_at': req_data.get('approved_at') or req_data.get('requested_at') or datetime.now().isoformat()
-                    }
+                    } if (req_data['status'] in ['APPROVED', 'REVOKED', 'VERIFIED'] or matching_cred) else None
                 }
                 
-                # Add approval info if approved
-                if req_data['status'] == 'APPROVED':
+                if req_data['status'] in ['APPROVED', 'REVOKED', 'VERIFIED']:
                     approved_at_str = req_data.get('approved_at') or req_data.get('requested_at') or datetime.now().isoformat()
                     request_info['approved_at'] = approved_at_str
-                    request_info['approved_by'] = req_data.get('approved_by')
+                    request_info['approved_by'] = req_data.get('approved_by') or 'GOVERNMENT_OFFICIAL'
                     
                     # Calculate 24h expiry
                     try:
@@ -252,41 +267,34 @@ class GovernmentPortalServer:
                         expires_dt = approved_dt + timedelta(hours=24)
                         expires_at_str = expires_dt.isoformat()
                         request_info['expires_at'] = expires_at_str
-                        request_info['verifiable_credential']['issued_at'] = approved_at_str
-                        request_info['verifiable_credential']['expires_at'] = expires_at_str
                         
-                        # ── Auto-revoke if 24h has passed ──────────────────
+                        if request_info['verifiable_credential']:
+                            request_info['verifiable_credential']['issued_at'] = approved_at_str
+                            request_info['verifiable_credential']['expires_at'] = expires_at_str
+                        
+                        # Auto-revoke if 24h has passed
                         now = datetime.now()
                         if expires_dt < now and req_data.get('status') != 'REVOKED':
                             print(f"⏰ Auto-revoking expired credential for DID: {req_data['citizen_did']}")
-                            # Mark as revoked in memory
-                            self.aadhaar_requests[request_id]['status'] = 'REVOKED'
-                            self.aadhaar_requests[request_id]['revoked_at'] = now.isoformat()
-                            self.aadhaar_requests[request_id]['revocation_reason'] = 'Credential expired after 24 hours'
                             req_data['status'] = 'REVOKED'
+                            req_data['revoked_at'] = now.isoformat()
+                            req_data['revocation_reason'] = 'Credential expired after 24 hours'
                             request_info['status'] = 'REVOKED'
-                            request_info['revocation_reason'] = 'Credential expired after 24 hours'
-                            # Update approved_aadhaar
-                            cdid = req_data['citizen_did']
-                            if cdid in self.approved_aadhaar:
-                                self.approved_aadhaar[cdid]['status'] = 'REVOKED'
-                                self.approved_aadhaar[cdid]['revoked_at'] = now.isoformat()
-                                self.approved_aadhaar[cdid]['revocation_reason'] = 'Auto-expired after 24 hours'
+                            request_info['revoked_at'] = req_data['revoked_at']
+                            request_info['revocation_reason'] = req_data['revocation_reason']
                             self.save_shared_data()
                     except Exception as e:
                         print(f"⚠️ Expiry check failed: {e}")
-                
-                # Add rejection info if rejected
+
                 if req_data['status'] == 'REJECTED':
                     request_info['rejected_at'] = req_data.get('rejected_at')
                     request_info['rejected_by'] = req_data.get('rejected_by')
                     request_info['rejection_reason'] = req_data.get('rejection_reason')
-                
-                # Add revocation info
-                if req_data.get('status') == 'REVOKED':
+
+                if req_data['status'] == 'REVOKED':
                     request_info['revoked_at'] = req_data.get('revoked_at')
                     request_info['revocation_reason'] = req_data.get('revocation_reason')
-                
+
                 all_requests.append(request_info)
 
             
@@ -1141,6 +1149,21 @@ class GovernmentPortalServer:
             except Exception as e:
                 print(f"⚠️ rust_indy_core_ledger update failed: {e}")
             
+            # ── 4.5. unified_vc_ledger.json ───────────────────────
+            try:
+                # Use the new unified_vc_ledger system if available
+                if hasattr(self, 'unified_vc_ledger'):
+                    # We need a revoke method in UnifiedVCLedger
+                    await self.unified_vc_ledger.revoke_credential(
+                        credential_id, 
+                        reason=reason_text,
+                        revoked_by=revoked_by
+                    )
+                    print(f"✅ Credential revoked in Unified VC Ledger: {credential_id}")
+                    revocation_updated = True
+            except Exception as e:
+                print(f"⚠️ unified_vc_ledger revoke failed: {e}")
+            
             # ── 5. approved_aadhaar ─────────────────────────────────
             if resolved_citizen_did and resolved_citizen_did in self.approved_aadhaar:
                 self.approved_aadhaar[resolved_citizen_did]['status'] = 'REVOKED'
@@ -1274,6 +1297,16 @@ class GovernmentPortalServer:
             # 3. Force update all related VC statuses in credential ledger as well
             # The rust_core.revoke_did already marks them in rust_indy_core_ledger.json
             
+            # 3. Trigger DID document refresh on IPFS
+            try:
+                from server.did_document_updater import DIDDocumentUpdater
+                updater = DIDDocumentUpdater()
+                import asyncio
+                asyncio.create_task(updater.update_did_document_on_ipfs(did))
+                print(f"🔄 Triggered DID document refresh for {did}")
+            except Exception as e:
+                print(f"⚠️ Failed to trigger DID document refresh: {e}")
+
             return web.json_response({
                 'success': True,
                 'message': f'DID {did} revoked successfully',

@@ -835,24 +835,18 @@ class CitizenPortalServer:
             did_registry = DIDRegistrySystem()
             
             if citizen_did:
-                print(f"🔍 Fetching DID information from DID Registry for: {citizen_did}")
-                # Use lookup_did method directly since get_did might not exist
-                registry_data = await did_registry._load_registry()
-                if citizen_did in registry_data.get('dids', {}):
-                    did_entry = registry_data['dids'][citizen_did]
-                    did_info = {'success': True, 'did_entry': did_entry}
-                else:
-                    did_info = {'success': False, 'error': 'DID not found'}
+                print(f"🔍 Resolving DID information via Registry for: {citizen_did}")
+                resolution = await did_registry.resolve_did(citizen_did)
                 
-                if did_info.get('success') and did_info.get('did_entry'):
-                    did_registry_info = did_info['did_entry']
-                    did_document = did_registry_info.get('did_document', citizen.get('did_document'))
-                    print(f"✅ Found DID in DID Registry")
+                if not resolution.get('didResolutionMetadata', {}).get('error'):
+                    did_registry_info = resolution.get('didDocumentMetadata', {})
+                    did_document = resolution.get('didDocument')
+                    print(f"✅ DID resolved successfully (Source: {did_registry_info.get('from_source', 'Registry')})")
                 else:
-                    print(f"⚠️ DID not found in DID Registry, using citizen data")
+                    print(f"⚠️ DID resolution failed, using citizen data fallback")
                     did_document = citizen.get('did_document')
         except Exception as e:
-            print(f"⚠️ Error fetching from DID Registry: {e}")
+            print(f"⚠️ Error resolving from DID Registry: {e}")
             did_document = citizen.get('did_document')
         
         # Get additional data from Rust ledger - check multiple sources
@@ -950,14 +944,22 @@ class CitizenPortalServer:
                         with open(rust_core_file, 'r') as f:
                             rust_core_ledger = json.load(f)
                         
-                        # Check transactions array
-                        transactions = rust_core_ledger.get('transactions', [])
-                        for tx in transactions:
-                            if isinstance(tx, dict) and tx.get('did') == citizen_did:
-                                transaction_hash = tx.get('transaction_id') or tx.get('transaction_hash')
-                                if not ipfs_cid:
-                                    ipfs_cid = tx.get('ipfs_cid')
-                                break
+                        # Check transactions - it's a dictionary in the core ledger
+                        transactions = rust_core_ledger.get('transactions', {})
+                        if isinstance(transactions, dict):
+                            for tx_id, tx in transactions.items():
+                                if isinstance(tx, dict) and tx.get('did') == citizen_did:
+                                    transaction_hash = tx.get('transaction_id') or tx.get('transaction_hash') or tx_id
+                                    if not ipfs_cid:
+                                        ipfs_cid = tx.get('ipfs_cid')
+                                    break
+                        elif isinstance(transactions, list):
+                            for tx in transactions:
+                                if isinstance(tx, dict) and tx.get('did') == citizen_did:
+                                    transaction_hash = tx.get('transaction_id') or tx.get('transaction_hash')
+                                    if not ipfs_cid:
+                                        ipfs_cid = tx.get('ipfs_cid')
+                                    break
                     except Exception as e:
                         print(f"⚠️ Error reading rust_indy_core_ledger: {e}")
             
@@ -1051,49 +1053,64 @@ class CitizenPortalServer:
                             'citizen_did': citizen_did
                         })
                 
-                # SECONDARY: Also check Rust Indy ledger for any additional credentials
-                if not vc_credentials:
-                    print(f"   No credentials in VC Ledger, checking Rust Indy ledger...")
+                # SECONDARY: Unified Cross-Blockchain Ledger
+                try:
+                    unified_creds = await self.unified_vc_ledger.get_credentials_by_did(citizen_did)
+                    for cred in unified_creds:
+                        cred_id = cred.get('credential_id') or cred.get('id')
+                        # Avoid duplicates
+                        if any(c['credential_id'] == cred_id for c in vc_credentials):
+                            continue
+                            
+                        vc_credentials.append({
+                            'credential_id': cred_id,
+                            'vc_number': f"VC_{cred_id}",
+                            'credential_type': cred.get('credential_type', 'AADHAAR_KYC'),
+                            'status': cred.get('status', 'ACTIVE'),
+                            'issued_at': cred.get('issued_at'),
+                            'revoked_at': cred.get('revoked_at'),
+                            'revocation_reason': cred.get('revocation_reason'),
+                            'revoked_by': cred.get('revoked_by'),
+                            'issued_by': cred.get('issuer', 'Government of India'),
+                            'credential_data': cred.get('credential_data', {}),
+                            'verified_at': cred.get('issued_at'),
+                            'ledger_id': 'unified_ledger',
+                            'ledger_source': 'unified_vc_ledger',
+                            'citizen_did': citizen_did
+                        })
+                except Exception as e:
+                    print(f"⚠️ Unified Ledger read error: {e}")
+
+                # TERTIARY: Also check Rust Indy ledger for any additional credentials
+                try:
                     ledger_file = Path(__file__).parent.parent / 'data' / 'rust_indy_core_ledger.json'
                     rust_core = IndyRustCore(str(ledger_file))
                     rust_creds = await rust_core.get_credentials_by_did(citizen_did)
                     
                     if rust_creds.get('found') and rust_creds.get('credentials'):
-                        print(f"✅ Found {len(rust_creds['credentials'])} credentials in Rust Indy ledger")
                         for cred in rust_creds['credentials']:
+                            cred_id = cred.get('credential_id')
+                            if any(c['credential_id'] == cred_id for c in vc_credentials):
+                                continue
+                            
                             cred_data = cred.get('transaction', {}).get('data', {})
-                            
-                            # Check for revocation
-                            is_revoked = cred_data.get('status') == 'REVOKED'
-                            if not is_revoked:
-                                ledger_data = await rust_core.get_ledger_data()
-                                for tx_id, tx in ledger_data.get('transactions', {}).items():
-                                    if tx.get('transaction_type') == 'CREDENTIAL_REVOCATION':
-                                        if tx.get('data', {}).get('credential_id') == cred['credential_id']:
-                                            is_revoked = True
-                                            break
-                            
                             vc_credentials.append({
-                                'credential_id': cred['credential_id'],
-                                'vc_number': f"VC_{cred['credential_id']}",
-                                'credential_type': cred['credential_type'],
-                                'status': 'REVOKED' if is_revoked else cred['status'],
-                                'issued_at': cred['issued_at'],
-                                'expires_at': cred.get('expires_at'),
+                                'credential_id': cred_id,
+                                'vc_number': f"VC_{cred_id}",
+                                'credential_type': cred.get('credential_type', 'AADHAAR_KYC'),
+                                'status': cred.get('status', 'ACTIVE'),
+                                'issued_at': cred.get('issued_at'),
+                                'revoked_at': cred_data.get('revoked_at'),
+                                'revocation_reason': cred_data.get('revocation_reason'),
                                 'issued_by': cred_data.get('issuer', 'Government of India'),
                                 'credential_data': cred_data.get('credential_data', {}),
-                                'citizen_name': cred_data.get('credential_data', {}).get('name') or cred_data.get('credential_data', {}).get('citizen_name') or citizen.get('name'),
-                                'aadhaar_number': cred_data.get('credential_data', {}).get('aadhaar_number') or citizen.get('aadhaar_number'),
-                                'kyc_level': cred_data.get('credential_data', {}).get('kyc_level') or 'Level 1',
-                                'verified_at': cred['issued_at'],
-                                'verifiable_credential_hash': cred_data.get('hash') or cred_data.get('signature') or cred['transaction_id'] or "N/A",
-                                'record_id': cred['transaction_id'],
+                                'verified_at': cred.get('issued_at'),
                                 'ledger_id': 'rust_indy_ledger',
-                                'transaction_id': cred['transaction_id'],
-                                'revocation_reason': cred_data.get('revocation_reason') if is_revoked else None,
-                                'ledger_source': 'rust_indy_ledger',
+                                'ledger_source': 'rust_indy_core',
                                 'citizen_did': citizen_did
                             })
+                except Exception as e:
+                    print(f"⚠️ Rust Indy Ledger read error: {e}")
                 
                 print(f"📊 Total VC credentials fetched: {len(vc_credentials)}")
                 if len(vc_credentials) > 0:
@@ -2024,6 +2041,30 @@ class CitizenPortalServer:
                     # Use the stored document as fallback
                     if citizen.get('did_document'):
                         did_document = citizen['did_document']
+                
+                # Check for DID revocation status
+                is_did_revoked = False
+                revocation_reason = None
+                try:
+                    registry_file = Path(__file__).parent.parent / 'data' / 'did_registry.json'
+                    if registry_file.exists():
+                        with open(registry_file, 'r') as f:
+                            registry = json.load(f)
+                        if citizen['did'] in registry.get('dids', {}):
+                            status = registry['dids'][citizen['did']].get('status', 'ACTIVE')
+                            if status == 'REVOKED':
+                                is_did_revoked = True
+                                revocation_reason = registry['dids'][citizen['did']].get('status_change_reason', 'Identity revoked by government')
+                except Exception as e:
+                    print(f"⚠️ Error checking DID revocation status: {e}")
+
+                if is_did_revoked:
+                    return web.json_response({
+                        'success': False,
+                        'error': 'DID_REVOKED',
+                        'message': 'Your Digital Identity (DID) has been revoked by the government.',
+                        'reason': revocation_reason
+                    }, status=403)
                 
                 # Check Aadhaar KYC status
                 has_approved_kyc = self.has_approved_aadhaar_kyc(citizen['did'])

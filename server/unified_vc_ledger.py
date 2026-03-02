@@ -98,11 +98,23 @@ class UnifiedVCLedger:
                 print("✅ Unified VC Ledger initialized successfully!")
             else:
                 print("✅ Unified VC Ledger loaded from existing file")
-                
         except Exception as e:
             print(f"❌ Failed to initialize unified VC ledger: {e}")
             import traceback
             traceback.print_exc()
+
+    async def get_credentials_by_did(self, did: str) -> List[Dict[str, Any]]:
+        """Get all credentials for a specific DID from the unified ledger"""
+        ledger_data = await self._load_ledger()
+        credentials = ledger_data.get("credentials", {})
+        
+        result = []
+        for cred_id, cred_data in credentials.items():
+            if isinstance(cred_data, dict) and cred_data.get("citizen_did") == did:
+                cred_data['credential_id'] = cred_id
+                result.append(cred_data)
+        
+        return result
     
     async def issue_credential(self, citizen_did: str, credential_data: Dict[str, Any], 
                               blockchain: str = "indy", cross_chain: bool = False) -> Dict[str, Any]:
@@ -250,10 +262,10 @@ class UnifiedVCLedger:
             print(f"❌ Failed to update credential: {e}")
             return {"success": False, "error": str(e)}
     
-    async def revoke_credential(self, credential_id: str, reason: str = "Government revocation") -> Dict[str, Any]:
+    async def revoke_credential(self, credential_id: str, reason: str = "Government revocation", revoked_by: str = None) -> Dict[str, Any]:
         """Revoke verifiable credential"""
         try:
-            print(f"🚫 Revoking VC: {credential_id}")
+            print(f"🚫 Revoking VC: {credential_id} (Reason: {reason})")
             start_time = datetime.now()
             
             ledger_data = await self._load_ledger()
@@ -267,6 +279,8 @@ class UnifiedVCLedger:
             credential["status"] = "REVOKED"
             credential["revoked_at"] = datetime.now().isoformat()
             credential["revocation_reason"] = reason
+            if revoked_by:
+                credential["revoked_by"] = revoked_by
             
             # Create transaction
             transaction_id = f"tx_revoke_{secrets.token_hex(16)}"

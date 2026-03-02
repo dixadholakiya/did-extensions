@@ -1,8 +1,8 @@
 {
   "ledger_id": "auto_identity_token_ledger_v1",
   "created_at": "2026-02-24T14:20:40.792306+00:00",
-  "total_tokens": 13,
-  "active_tokens": 13,
+  "total_tokens": 15,
+  "active_tokens": 15,
   "expired_tokens": 0,
   "revoked_tokens": 0,
   "tokens": {
@@ -525,6 +525,86 @@
       "created_at": "2026-02-25T00:39:41.826692",
       "expires_at": "2026-02-26T00:39:41.826453",
       "ledger_index": 13
+    },
+    "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365": {
+      "token_id": "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365",
+      "token_type": "identity_token",
+      "citizen_did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+      "claims": {
+        "jti": "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365",
+        "iss": "aadhaar-kyc-system",
+        "aud": "government-services",
+        "sub": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "iat": 1772122648.392011,
+        "exp": 1772209048.391997,
+        "token_type": "identity_token",
+        "scope": [
+          "identity",
+          "kyc",
+          "services"
+        ],
+        "did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "did_status": "ACTIVE",
+        "did_registered_at": "2026-02-26T21:45:02.957496",
+        "resolution_status": "SUCCESS",
+        "resolution_source": "local_did_registry",
+        "vc_credentials_count": 0,
+        "vc_credentials": [],
+        "kyc_approved": true,
+        "kyc_level": "LEVEL_1",
+        "aadhaar_verified": true,
+        "government_services_access": true,
+        "citizen_name": "Dholakiya Dixa Nareshbhai",
+        "aadhaar_number": "",
+        "pqie_token_id": "token_ce1b74fda57e305c",
+        "name": "",
+        "email": "",
+        "phone": ""
+      },
+      "status": "ACTIVE",
+      "created_at": "2026-02-26T21:47:28.392442",
+      "expires_at": "2026-02-27T21:47:28.391997",
+      "ledger_index": 14
+    },
+    "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25": {
+      "token_id": "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25",
+      "token_type": "identity_token",
+      "citizen_did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+      "claims": {
+        "jti": "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25",
+        "iss": "aadhaar-kyc-system",
+        "aud": "government-services",
+        "sub": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "iat": 1772123567.960707,
+        "exp": 1772209967.960696,
+        "token_type": "identity_token",
+        "scope": [
+          "identity",
+          "kyc",
+          "services"
+        ],
+        "did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "did_status": "ACTIVE",
+        "did_registered_at": "2026-02-26T21:45:02.957496",
+        "resolution_status": "SUCCESS",
+        "resolution_source": "local_did_registry",
+        "vc_credentials_count": 0,
+        "vc_credentials": [],
+        "kyc_approved": true,
+        "kyc_level": "LEVEL_1",
+        "aadhaar_verified": true,
+        "government_services_access": true,
+        "citizen_name": "Dholakiya Dixa Nareshbhai",
+        "aadhaar_number": "",
+        "pqie_token_id": "token_807b01bb54596dad",
+        "name": "",
+        "email": "",
+        "phone": ""
+      },
+      "status": "ACTIVE",
+      "created_at": "2026-02-26T22:02:47.961217",
+      "expires_at": "2026-02-27T22:02:47.960696",
+      "ledger_index": 15
     }
   },
   "token_indexes": {
@@ -563,6 +643,10 @@
       "did:sdis:7e396d8a1893326b50c89:bd81f4091893303a1636b:284304f67ca7f1ce": [
         "auto_token_identity_token_e79e94edb29800193961a34d2df8f42a",
         "auto_token_identity_token_c60a6451de983be2097a7b84c7426aef"
+      ],
+      "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb": [
+        "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365",
+        "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25"
       ]
     },
     "by_token_type": {
@@ -579,7 +663,9 @@
         "auto_token_identity_token_406cee8a1a8597fbdbfca7a2d5b8fd3a",
         "auto_token_identity_token_7868186d5ab513835a967bf5ece8c2a8",
         "auto_token_identity_token_e79e94edb29800193961a34d2df8f42a",
-        "auto_token_identity_token_c60a6451de983be2097a7b84c7426aef"
+        "auto_token_identity_token_c60a6451de983be2097a7b84c7426aef",
+        "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365",
+        "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25"
       ]
     },
     "by_status": {
@@ -596,7 +682,9 @@
         "auto_token_identity_token_406cee8a1a8597fbdbfca7a2d5b8fd3a",
         "auto_token_identity_token_7868186d5ab513835a967bf5ece8c2a8",
         "auto_token_identity_token_e79e94edb29800193961a34d2df8f42a",
-        "auto_token_identity_token_c60a6451de983be2097a7b84c7426aef"
+        "auto_token_identity_token_c60a6451de983be2097a7b84c7426aef",
+        "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365",
+        "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25"
       ]
     },
     "by_issued_date": {
@@ -616,6 +704,10 @@
       ],
       "2026-02-25": [
         "auto_token_identity_token_c60a6451de983be2097a7b84c7426aef"
+      ],
+      "2026-02-26": [
+        "auto_token_identity_token_7fddfefea5f88a60fb5749c2e5e92365",
+        "auto_token_identity_token_dbd3151829832f12daeb9e650e201d25"
       ]
     }
   }

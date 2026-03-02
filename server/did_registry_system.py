@@ -13,6 +13,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 from pathlib import Path
 import uuid
+from server.ipfs_util import download_from_ipfs, upload_json_to_ipfs, is_ipfs_available, get_ipfs_link
 
 class DIDRegistrySystem:
     """Centralized DID Registry System"""
@@ -514,6 +515,17 @@ class DIDRegistrySystem:
                     did_document = stored.get("document") or did_document
                     ipfs_cid = stored.get("ipfs_cid") or ipfs_cid
 
+            # ── 4. IPFS Fallback Resolution ────────────────────
+            # If the DID document is missing or minimal, try fetching full version from IPFS
+            if ipfs_cid and (not did_document or len(did_document.get('verificationMethod', [])) == 0):
+                print(f"🌐 Fetching DID Document from IPFS: {ipfs_cid}")
+                remote_doc = download_from_ipfs(ipfs_cid)
+                if remote_doc:
+                    print(f"✅ DID Document retrieved from IPFS")
+                    did_document = remote_doc
+                else:
+                    print(f"⚠️ Failed to retrieve from IPFS, using local data")
+
             print(f"✅ DID resolved successfully: {did}")
             return self._build_resolution_result(
                 did=did,
@@ -698,7 +710,7 @@ class DIDRegistrySystem:
             try:
                 import sys
                 sys.path.insert(0, str(Path(__file__).parent))
-                from ipfs_util import upload_json_to_ipfs, is_ipfs_available, get_ipfs_link
+                # IPFS logic handled via top-level imports
                 if is_ipfs_available():
                     did_hash = did.split(':')[-1] if ':' in did else did
                     filename = f"did_{did_hash}_v{new_version}.json"

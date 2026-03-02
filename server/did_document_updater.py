@@ -85,6 +85,24 @@ class DIDDocumentUpdater:
                                     revocation_reason = rev_data.get('revocation_reason')
                                     break
                     
+                    # Get full history from transactions
+                    cred_history = []
+                    for tx_id, tx in transactions.items():
+                        tx_data = tx.get('data', {})
+                        if tx.get('transaction_type') == 'CREDENTIAL' and tx_data.get('id') == cred_id:
+                            cred_history.append({
+                                'event': 'ISSUANCE',
+                                'timestamp': tx.get('timestamp'),
+                                'status': 'COMMITTED'
+                            })
+                        elif tx.get('transaction_type') == 'CREDENTIAL_REVOCATION' and tx_data.get('credential_id') == cred_id:
+                            cred_history.append({
+                                'event': 'REVOCATION',
+                                'timestamp': tx.get('timestamp'),
+                                'reason': tx_data.get('revocation_reason'),
+                                'by': tx_data.get('revoked_by')
+                            })
+                    
                     credential_refs.append({
                         'id': cred_id,
                         'type': cred['credential_type'],
@@ -96,7 +114,8 @@ class DIDDocumentUpdater:
                         'revoked_at': revoked_at,
                         'revocation_reason': revocation_reason,
                         'issuer': cred_data.get('issuer', 'Government of India'),
-                        'credentialSubject': cred_data.get('credential_data', {})
+                        'credentialSubject': cred_data.get('credential_data', {}),
+                        'history': sorted(cred_history, key=lambda x: x['timestamp'])
                     })
             
             # Build updated DID document
@@ -105,8 +124,26 @@ class DIDDocumentUpdater:
                 # Generate base DID document
                 did_document = await self._generate_base_did_document(citizen_did)
             
-            # Update DID document with credential references
+            # Get DID status from registry if possible
+            did_status = "ACTIVE"
+            status_reason = None
+            try:
+                registry_file = Path(__file__).parent.parent / 'data' / 'did_registry.json'
+                if registry_file.exists():
+                    with open(registry_file, 'r') as f:
+                        registry = json.load(f)
+                    if citizen_did in registry.get('dids', {}):
+                        did_status = registry['dids'][citizen_did].get('status', 'ACTIVE')
+                        status_reason = registry['dids'][citizen_did].get('status_change_reason')
+            except Exception as se:
+                print(f"⚠️ Could not fetch DID status from registry: {se}")
+
+            # Update DID document with credential references and status
             did_document['updated_at'] = datetime.now().isoformat()
+            did_document['identityStatus'] = did_status
+            if status_reason:
+                did_document['statusReason'] = status_reason
+            
             did_document['credentialReferences'] = credential_refs
             did_document['credentialCount'] = len(credential_refs)
             did_document['activeCredentials'] = len([c for c in credential_refs if not c.get('revoked', False)])

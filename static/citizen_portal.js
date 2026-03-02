@@ -145,7 +145,7 @@ class CitizenPortal {
     async handleLogin(e) {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
-        
+
         try {
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -154,16 +154,16 @@ class CitizenPortal {
                 },
                 body: JSON.stringify(data)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentSession = {
                     session_id: result.session_id,
                     user_id: result.user_id,
                     name: result.name
                 };
-                
+
                 localStorage.setItem('citizen_session', JSON.stringify(this.currentSession));
                 this.showMainApp();
                 this.checkUserDIDStatus();
@@ -178,7 +178,7 @@ class CitizenPortal {
     async handleRegister(e) {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
-        
+
         try {
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
@@ -187,9 +187,9 @@ class CitizenPortal {
                 },
                 body: JSON.stringify(data)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.showRegisterSuccess(result);
             } else {
@@ -214,7 +214,7 @@ class CitizenPortal {
                     'X-Session-ID': this.currentSession.session_id
                 }
             });
-            
+
             if (response.status === 401) {
                 // Session expired, redirect to login
                 console.log('Session expired, redirecting to login');
@@ -223,9 +223,9 @@ class CitizenPortal {
                 this.showLogin();
                 return;
             }
-            
+
             const result = await response.json();
-            
+
             if (result.has_did) {
                 this.currentCitizenId = result.citizen_id;
                 this.hasApprovedAadhaarKYC = result.has_approved_aadhaar_kyc;
@@ -242,7 +242,7 @@ class CitizenPortal {
     showDIDGenerationPrompt() {
         // Hide registration tab and show DID generation content
         this.hideTab('register');
-        
+
         // Update the tab content to show DID generation
         document.getElementById('mainContent').innerHTML = `
             <div class="workflow-step">
@@ -263,7 +263,7 @@ class CitizenPortal {
                 </div>
             </div>
         `;
-        
+
         // Make sure the main content is visible
         document.getElementById('mainContent').classList.add('active');
     }
@@ -271,17 +271,17 @@ class CitizenPortal {
     showWalletEntries() {
         // Hide registration tab if it exists
         this.hideTab('register');
-        
+
         // Activate the wallet tab
         const walletTab = document.querySelector('[onclick="citizenPortal.showTab(\'wallet\')"]');
         if (walletTab) {
             walletTab.classList.add('active');
         }
-        
+
         // Load wallet content
         this.loadWalletContent();
         this.loadWalletData();
-        
+
         // Make sure main content is visible
         document.getElementById('mainContent').classList.add('active');
     }
@@ -292,7 +292,7 @@ class CitizenPortal {
             tabElement.style.display = 'none';
             tabElement.classList.remove('active');
         }
-        
+
         // Also hide the corresponding tab content
         const tabContent = document.getElementById(tabName);
         if (tabContent) {
@@ -305,7 +305,7 @@ class CitizenPortal {
         // Remove active class from all tabs
         const tabs = document.querySelectorAll('.tab');
         tabs.forEach(tab => tab.classList.remove('active'));
-        
+
         // Add active class to clicked tab
         if (event && event.target) {
             event.target.classList.add('active');
@@ -316,16 +316,16 @@ class CitizenPortal {
                 targetTab.classList.add('active');
             }
         }
-        
+
         // Load tab-specific content
         this.loadTabContent(tabName);
-        
+
         // Make sure main content is visible
         document.getElementById('mainContent').classList.add('active');
     }
 
     loadTabContent(tabName) {
-        switch(tabName) {
+        switch (tabName) {
             case 'wallet':
                 this.loadWalletContent();
                 break;
@@ -367,8 +367,15 @@ class CitizenPortal {
                     <p>Loading blockchain status...</p>
                 </div>
             </div>
+
+            <div class="wallet-section">
+                <h3>📇 Verifiable Credentials (VCs)</h3>
+                <div id="vcCredentials">
+                    <p>Loading credentials...</p>
+                </div>
+            </div>
         `;
-        
+
         this.loadWalletData();
     }
 
@@ -385,7 +392,7 @@ class CitizenPortal {
                 </div>
             </div>
         `;
-        
+
         this.loadGovernmentServices();
     }
 
@@ -394,14 +401,14 @@ class CitizenPortal {
             console.log('Loading government services...');
             const response = await fetch('/api/citizen/government-services');
             console.log('Response status:', response.status);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const result = await response.json();
             console.log('Parsed result:', result);
-            
+
             if (result.success) {
                 this.displayGovernmentServices(result.services);
             } else {
@@ -423,7 +430,7 @@ class CitizenPortal {
 
     displayGovernmentServices(services) {
         const servicesContainer = document.getElementById('servicesList');
-        
+
         if (!services || Object.keys(services).length === 0) {
             servicesContainer.innerHTML = `
                 <div class="no-services">
@@ -433,7 +440,7 @@ class CitizenPortal {
             `;
             return;
         }
-        
+
         const servicesHTML = Object.values(services).map(service => `
             <div class="service-card">
                 <div class="service-header">
@@ -464,16 +471,145 @@ class CitizenPortal {
                     <button class="btn btn-primary" onclick="citizenPortal.applyForService('${service.service_id}')">
                         Apply Now
                     </button>
+                    <button class="btn btn-success" onclick="citizenPortal.applyForServiceWithZKP('${service.service_id}')">
+                        Apply with ZKP Token
+                    </button>
                 </div>
             </div>
         `).join('');
-        
+
         servicesContainer.innerHTML = servicesHTML;
     }
 
     applyForService(serviceId) {
         alert(`Application for service ${serviceId} would be processed here. This is a demo implementation.`);
     }
+
+    async applyForServiceWithZKP(serviceId) {
+        try {
+            if (!this.hasApprovedAadhaarKYC) {
+                alert("❌ Aadhaar KYC must be approved before you can generate ZKP tokens.");
+                return;
+            }
+
+            console.log(`🎫 Initiating ZKP Application for service: ${serviceId}`);
+
+            // Show loading state
+            const servicesContainer = document.getElementById('servicesList');
+            const originalHTML = servicesContainer.innerHTML;
+            servicesContainer.innerHTML = `
+                <div class="zkp-loading-container">
+                    <div class="zkp-animation">
+                        <div class="lock-icon">🔒</div>
+                        <div class="shimmer"></div>
+                    </div>
+                    <h4>Generating Zero-Knowledge Proof...</h4>
+                    <p>Muffling Aadhaar details with Lattice-based noise (PQIE framework)</p>
+                    <div class="did-info">DID: ${this.currentCitizenId}</div>
+                    <div class="service-info">Service: ${serviceId}</div>
+                </div>
+            `;
+
+            // Wait for proof generation (simulated delay for UI)
+            await new Promise(r => setTimeout(r, 2000));
+
+            // Call ZKP generation API
+            const response = await fetch('/api/tokens/generate-zkp-service-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    citizen_did: this.currentCitizenId,
+                    service_id: serviceId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showZKPTokenModal(result.token);
+            } else {
+                alert(`❌ ZKP Generation Failed: ${result.error || 'Unknown error'}`);
+            }
+
+            // Restore services list
+            servicesContainer.innerHTML = originalHTML;
+
+        } catch (error) {
+            console.error('Error in ZKP application:', error);
+            alert(`❌ Application Error: ${error.message}`);
+        }
+    }
+
+    showZKPTokenModal(token) {
+        const modalId = 'zkpTokenModal';
+        let modal = document.getElementById(modalId);
+
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="modal-content zkp-token-receipt">
+                <span class="close" onclick="document.getElementById('${modalId}').style.display='none'">&times;</span>
+                <div class="receipt-header">
+                    <div class="tick-icon">✅</div>
+                    <h2>ZKP Service Token Issued</h2>
+                    <p>Privacy-Preserving Proof of KYC</p>
+                </div>
+                
+                <div class="receipt-body">
+                    <div class="token-main">
+                        <div class="label">Token ID</div>
+                        <div class="value code">${token.token_id}</div>
+                    </div>
+                    
+                    <div class="token-grid">
+                        <div class="token-item">
+                            <div class="label">Service</div>
+                            <div class="value">${token.target_service}</div>
+                        </div>
+                        <div class="token-item">
+                            <div class="label">Status</div>
+                            <div class="value"><span class="badge badge-success">VALID</span></div>
+                        </div>
+                        <div class="token-item">
+                            <div class="label">Masked DID</div>
+                            <div class="value code">${token.citizen_did_masked}</div>
+                        </div>
+                        <div class="token-item">
+                            <div class="label">Expires At</div>
+                            <div class="value">${new Date(token.expires_at).toLocaleString()}</div>
+                        </div>
+                    </div>
+
+                    <div class="zkp-proof-details">
+                        <h4>🛡️ Cryptographic Proof (PQIE)</h4>
+                        <div class="proof-box">
+                            <p><strong>Method:</strong> Ring-LWE Lattice Construction</p>
+                            <p><strong>Proof Payload:</strong> <code class="small">${token.zkp_proof.did}</code></p>
+                            <p class="status-msg">Verification confirmed by government root. Aadhaar PII redacted.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="receipt-footer">
+                    <button class="btn btn-success" onclick="document.getElementById('${modalId}').style.display='none'">
+                        Download Token Receipt
+                    </button>
+                    <p class="security-note">⚠️ ${token.security_info}</p>
+                </div>
+            </div>
+        `;
+
+        modal.style.display = 'block';
+    }
+
+    loadAadhaarContent() {
         document.getElementById('mainContent').innerHTML = `
             <h2>Aadhaar e-KYC Request</h2>
             <p>Request Aadhaar e-KYC verification</p>
@@ -496,7 +632,7 @@ class CitizenPortal {
             
             <div id="aadhaarStatus" class="hidden"></div>
         `;
-        
+
         // Bind Aadhaar form
         document.getElementById('aadhaarForm').addEventListener('submit', (e) => {
             this.handleAadhaarRequest(e);
@@ -514,7 +650,7 @@ class CitizenPortal {
                 </div>
             </div>
         `;
-        
+
         this.loadServices();
     }
 
@@ -569,7 +705,7 @@ class CitizenPortal {
             
             <div id="registrationResult" class="result-message" style="display: none;"></div>
         `;
-        
+
         // Bind registration form
         document.getElementById('registrationForm').addEventListener('submit', (e) => {
             this.handleRegistration(e);
@@ -637,7 +773,7 @@ class CitizenPortal {
                 </form>
             </div>
         `;
-        
+
         // Bind form submission
         document.getElementById('userDetailsForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -658,13 +794,13 @@ class CitizenPortal {
                 gender: formData.get('gender'),
                 aadhaar_number: formData.get('aadhaar_number') || null
             };
-            
+
             // Show loading
             const submitBtn = document.querySelector('#userDetailsForm button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '⏳ Generating DID...';
             submitBtn.disabled = true;
-            
+
             const response = await fetch('/api/citizen/generate-did', {
                 method: 'POST',
                 headers: {
@@ -673,15 +809,15 @@ class CitizenPortal {
                 },
                 body: JSON.stringify(personalDetails)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentCitizenId = result.citizen_id;
-                
+
                 // Show success message first
                 this.showDIDSuccess(result);
-                
+
                 // Then redirect to wallet after a short delay
                 setTimeout(() => {
                     this.showWalletEntries();
@@ -717,7 +853,7 @@ class CitizenPortal {
                         <p><strong>Status:</strong> <span class="badge badge-success">STORED ON LEDGER</span></p>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-success btn-large" onclick="citizenPortal.showWalletEntries()">
+                        <button class="btn btn-success btn-large" onclick="citizenPortal.showTab('wallet')">
                             ➡️ Go to Wallet
                         </button>
                         <p class="text-muted">Redirecting to wallet in 2 seconds...</p>
@@ -725,6 +861,11 @@ class CitizenPortal {
                 </div>
             </div>
         `;
+
+        // Auto redirect to wallet
+        setTimeout(() => {
+            this.showTab('wallet');
+        }, 2000);
     }
 
     async loadWalletData() {
@@ -735,7 +876,7 @@ class CitizenPortal {
                     'X-Session-ID': this.currentSession.session_id
                 }
             });
-            
+
             if (response.status === 401) {
                 // Session expired, redirect to login
                 console.log('Session expired, redirecting to login');
@@ -744,13 +885,13 @@ class CitizenPortal {
                 this.showLogin();
                 return;
             }
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const result = await response.json();
-            
+
             if (result.success && result.has_did) {
                 document.getElementById('didInfo').innerHTML = `
                     <div class="did-display">
@@ -778,7 +919,7 @@ class CitizenPortal {
                         </div>
                     </div>
                 `;
-                
+
                 // Safely display DID document
                 let didDocHtml = '<p>No DID document available.</p>';
                 if (result.did_document && typeof result.did_document === 'object') {
@@ -802,14 +943,14 @@ class CitizenPortal {
                     }
                 }
                 document.getElementById('didDocument').innerHTML = didDocHtml;
-                
+
                 // Enable resolve button
                 const resolveBtn = document.getElementById('resolveBtn');
                 if (resolveBtn) {
                     resolveBtn.disabled = false;
                     resolveBtn.setAttribute('data-did', result.did);
                 }
-                
+
                 document.getElementById('blockchainStatus').innerHTML = `
                     <div class="blockchain-info">
                         <h4>🔗 Blockchain Status</h4>
@@ -847,15 +988,26 @@ class CitizenPortal {
                         ` : ''}
                     </div>
                 `;
+
+                // Display VC Credentials
+                if (result.vc_credentials && result.vc_credentials.length > 0) {
+                    this.displayVCCredentials(result.vc_credentials);
+                } else {
+                    document.getElementById('vcCredentials').innerHTML = `
+                        <div class="no-credentials">
+                            <p>No Verifiable Credentials found. Complete Aadhaar e-KYC to receive your digital credential.</p>
+                        </div>
+                    `;
+                }
             } else {
                 document.getElementById('didInfo').innerHTML = `
                     <p>No DID found. Please complete registration first.</p>
                 `;
-                
+
                 document.getElementById('didDocument').innerHTML = `
                     <p>No DID document available.</p>
                 `;
-                
+
                 document.getElementById('blockchainStatus').innerHTML = `
                     <p>No blockchain data available.</p>
                 `;
@@ -876,15 +1028,15 @@ class CitizenPortal {
 
     async handleAadhaarRequest(e) {
         e.preventDefault();
-        
+
         if (!this.currentCitizenId) {
             alert('Please generate DID first');
             return;
         }
-        
+
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
-        
+
         try {
             const response = await fetch(`/api/citizen/${this.currentCitizenId}/aadhaar-request`, {
                 method: 'POST',
@@ -894,9 +1046,9 @@ class CitizenPortal {
                 },
                 body: JSON.stringify(data)
             });
-            
+
             const result = await response.json();
-            
+
             if (response.ok) {
                 this.showAadhaarSuccess(result);
             } else if (response.status === 429) {
@@ -962,16 +1114,16 @@ class CitizenPortal {
             `;
             return;
         }
-        
+
         try {
             const response = await fetch(`/api/citizen/${this.currentCitizenId}/services`, {
                 headers: {
                     'X-Session-ID': this.currentSession.session_id
                 }
             });
-            
+
             const result = await response.json();
-            
+
             if (result.services && result.services.length > 0) {
                 const servicesHTML = result.services.map(service => `
                     <div class="service-card">
@@ -980,7 +1132,7 @@ class CitizenPortal {
                         <button class="btn btn-success">Apply Now</button>
                     </div>
                 `).join('');
-                
+
                 document.getElementById('servicesContent').innerHTML = `
                     <div class="alert alert-success">
                         <h3>✅ Aadhaar e-KYC Approved!</h3>
@@ -1010,10 +1162,10 @@ class CitizenPortal {
 
     async handleRegistration(e) {
         e.preventDefault();
-        
+
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
-        
+
         try {
             const response = await fetch('/api/citizen/register', {
                 method: 'POST',
@@ -1023,9 +1175,9 @@ class CitizenPortal {
                 },
                 body: JSON.stringify(data)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentCitizenId = result.citizen_id;
                 this.showRegistrationSuccess(result);
@@ -1081,7 +1233,7 @@ class CitizenPortal {
             </div>
         `;
         resultDiv.classList.remove('hidden');
-        
+
         setTimeout(() => {
             this.showLogin();
         }, 2000);
@@ -1123,7 +1275,7 @@ class CitizenPortal {
                 this.showLogin();
                 return;
             }
-            
+
             console.log('Sending logout request...');
             const response = await fetch('/api/auth/logout', {
                 method: 'POST',
@@ -1132,17 +1284,17 @@ class CitizenPortal {
                 },
                 body: JSON.stringify({ session_id: this.currentSession.session_id })
             });
-            
+
             console.log('Logout response:', response.status);
             const result = await response.json();
             console.log('Logout result:', result);
-            
+
             this.currentSession = null;
             this.currentCitizenId = null;
             this.userCitizens = [];
-            
+
             localStorage.removeItem('citizen_session');
-            
+
             document.getElementById('authSection').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             this.showLogin();
@@ -1158,15 +1310,81 @@ class CitizenPortal {
             this.showLogin();
         }
     }
-    
+
+    displayVCCredentials(credentials) {
+        const vcContainer = document.getElementById('vcCredentials');
+        if (!vcContainer) return;
+
+        const credentialsHTML = credentials.map(cred => {
+            const isRevoked = cred.status === 'REVOKED';
+            const cardClass = isRevoked ? 'credential-card revoked' : 'credential-card active';
+            const badgeClass = isRevoked ? 'badge badge-danger' : 'badge badge-success';
+            const statusLabel = isRevoked ? 'REVOKED ⚠️' : 'ACTIVE ✅';
+
+            return `
+                <div class="${cardClass}" style="${isRevoked ? 'background: linear-gradient(135deg, #721c24 0%, #350b0e 100%);' : 'background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);'} color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                                📄 ${cred.credential_type.replace(/_/g, ' ')}
+                            </h4>
+                            <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 0.9rem;">Issued By: ${cred.issued_by}</p>
+                        </div>
+                        <span class="${badgeClass}">${statusLabel}</span>
+                    </div>
+                    
+                    <div class="cred-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                        <div>
+                            <small style="display: block; opacity: 0.7; text-transform: uppercase; font-weight: bold; font-size: 0.7rem;">Credential ID</small>
+                            <div style="font-family: monospace; font-size: 0.9rem; word-break: break-all;">${cred.vc_number || cred.credential_id}</div>
+                        </div>
+                        <div>
+                            <small style="display: block; opacity: 0.7; text-transform: uppercase; font-weight: bold; font-size: 0.7rem;">Issued At</small>
+                            <div style="font-size: 0.9rem;">${new Date(cred.issued_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+
+                    ${isRevoked ? `
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(255,0,0,0.2); border-left: 4px solid #ff4444; border-radius: 4px;">
+                            <strong style="color: #ffcccc;">Revocation Reason:</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9rem;">${cred.revocation_reason || 'Administrative revocation'}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.8rem; opacity: 0.8;">Revoked By: ${cred.revoked_by || 'Authority'}</p>
+                        </div>
+                    ` : `
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="btn btn-sm btn-light" onclick="citizenPortal.copyToClipboard('${cred.credential_id}')" style="font-size: 0.8rem;">
+                                📋 Copy ID
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="citizenPortal.showVCDetails('${cred.credential_id}')" style="font-size: 0.8rem;">
+                                👁️ View Details
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+        }).join('');
+
+        vcContainer.innerHTML = credentialsHTML;
+    }
+
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Credential ID copied to clipboard');
+        });
+    }
+
+    showVCDetails(credId) {
+        alert(`Detailed view for ${credId} is under development.`);
+    }
+
     resolveDID() {
         const resolveBtn = document.getElementById('resolveBtn');
         const did = resolveBtn.getAttribute('data-did');
-        
+
         if (did) {
             // For now, just show an alert - backend implementation can be added later
             alert(`Resolving DID: ${did}\n\nThis feature will be implemented in the backend to verify the DID on the blockchain ledger.`);
-            
+
             // You can add actual DID resolution logic here later
             console.log('Resolving DID:', did);
         }

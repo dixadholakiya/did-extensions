@@ -12,6 +12,7 @@ from aiohttp import web, web_request
 
 # Import the Auto Identity Token Generator
 from auto_identity_token_generator import AutoIdentityTokenGenerator
+from zkp_token_service import ZKPTokenService
 
 class AutoIdentityTokenServer:
     """Auto Identity Token Integration Server"""
@@ -19,6 +20,7 @@ class AutoIdentityTokenServer:
     def __init__(self):
         self.app = web.Application()
         self.token_generator = AutoIdentityTokenGenerator()
+        self.zkp_service = ZKPTokenService()
         
         # Setup routes
         self.setup_routes()
@@ -40,6 +42,7 @@ class AutoIdentityTokenServer:
         # Token generation routes
         self.app.router.add_post('/api/tokens/generate', self.generate_token)
         self.app.router.add_post('/api/tokens/generate/{token_type}', self.generate_specific_token)
+        self.app.router.add_post('/api/tokens/generate-zkp-service-token', self.generate_zkp_service_token)
         
         # Token verification routes
         self.app.router.add_post('/api/tokens/verify', self.verify_token)
@@ -213,6 +216,7 @@ class AutoIdentityTokenServer:
         """Generate specific type of token"""
         try:
             token_type = request.match_info['token_type']
+            # ... existing implementation ...
             data = await request.json()
             citizen_did = data.get('citizen_did')
             additional_claims = data.get('additional_claims', {})
@@ -233,6 +237,26 @@ class AutoIdentityTokenServer:
                     'expires_at': result['expires_at'],
                     'generated_at': datetime.now().isoformat()
                 })
+            else:
+                return web.json_response({'error': result['error']}, status=400)
+                
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def generate_zkp_service_token(self, request):
+        """Generate a ZKP-based service token (privacy-preserving)"""
+        try:
+            data = await request.json()
+            citizen_did = data.get('citizen_did')
+            service_id = data.get('service_id')
+            
+            if not citizen_did or not service_id:
+                return web.json_response({'error': 'citizen_did and service_id are required'}, status=400)
+            
+            result = await self.zkp_service.generate_zkp_service_token(citizen_did, service_id)
+            
+            if result['success']:
+                return web.json_response(result)
             else:
                 return web.json_response({'error': result['error']}, status=400)
                 

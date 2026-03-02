@@ -3,9 +3,9 @@
     "registry_id": "aadhaar_did_registry_v2",
     "version": "2.0.0",
     "created_at": "2026-02-24T14:20:40.791965+00:00",
-    "last_updated": "2026-02-24T23:27:50.695863",
-    "total_dids": 3,
-    "active_dids": 3,
+    "last_updated": "2026-02-26T21:45:02.957530",
+    "total_dids": 5,
+    "active_dids": 4,
     "revoked_dids": 0,
     "max_dids": 1000000
   },
@@ -28,15 +28,16 @@
   },
   "statistics": {
     "blockchain_distribution": {
-      "indy": 3,
+      "indy": 4,
       "ethereum": 0,
       "other": 0
     },
     "monthly_registrations": {
-      "2026-02": 3
+      "2026-02": 4
     },
     "daily_registrations": {
-      "2026-02-24": 3
+      "2026-02-24": 3,
+      "2026-02-26": 1
     },
     "status_distribution": {
       "ACTIVE": 0,
@@ -314,6 +315,173 @@
       "registered_at": "2026-02-24T23:27:50.695654",
       "last_updated": "2026-02-24T23:27:50.695657",
       "expires_at": "2036-02-22T23:27:50.695658",
+      "metadata": {
+        "created_by": "did_registry_system",
+        "version": "2.0.0",
+        "backup_enabled": true,
+        "indexed": true
+      }
+    },
+    "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a": {
+      "did": "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a",
+      "did_document": {
+        "@context": "https://www.w3.org/ns/did/v1",
+        "id": "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a",
+        "authentication": [
+          "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a#key-1"
+        ],
+        "assertionMethod": [
+          "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a#key-1"
+        ],
+        "created": "2026-02-26T16:13:48.663912",
+        "method": "ring-lwe-pqie",
+        "generationParams": {
+          "algorithm": "Ring-LWE",
+          "n": 512,
+          "q": 24593,
+          "sigma": 4.0,
+          "noiseFiltering": true,
+          "inputFields": [
+            "name",
+            "email",
+            "phone",
+            "address",
+            "dob",
+            "gender",
+            "aadhaar_number"
+          ]
+        },
+        "citizen_info": {
+          "name": "Cross-Blockchain Test Citizen",
+          "email": "crosschain@example.com",
+          "phone": "+12345678000",
+          "address": "789 Cross Blockchain Ave",
+          "dob": "1980-01-15",
+          "gender": "Other",
+          "aadhaar_number": "111222333444"
+        },
+        "verificationMethod": [
+          {
+            "id": "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a#key-1",
+            "type": "Ed25519VerificationKey2018",
+            "controller": "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a",
+            "publicKeyBase58": "~072b35957826af406f476734ac0a60c7f3a13af66880a6695ee2486def4e929b"
+          }
+        ],
+        "service": [
+          {
+            "id": "did:sdis:e9d1a4021893316c5efe8:f4583c9e1893367150490:6c2b7213902dc89a#aadhaar-kyc",
+            "type": "AadhaarKYCService",
+            "serviceEndpoint": "https://aadhaar-kyc.gov.in/verify"
+          }
+        ],
+        "created_at": "2026-02-26T21:43:48.663929",
+        "status": "ACTIVE"
+      },
+      "citizen_data": {
+        "name": "Cross-Blockchain Test Citizen",
+        "email": "crosschain@example.com",
+        "phone": "+12345678000",
+        "address": "789 Cross Blockchain Ave",
+        "dob": "1980-01-15",
+        "gender": "Other",
+        "aadhaar_number": "111222333444"
+      },
+      "registered_at": "2026-02-26T21:43:48.664088",
+      "status": "ACTIVE",
+      "registry_index": 4
+    },
+    "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb": {
+      "did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+      "registry_index": 5,
+      "did_document": {
+        "@context": "https://www.w3.org/ns/did/v1",
+        "id": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "authentication": [
+          "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb#key-1"
+        ],
+        "assertionMethod": [
+          "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb#key-1"
+        ],
+        "created": "2026-02-26T16:15:02.851555",
+        "method": "ring-lwe-pqie",
+        "generationParams": {
+          "algorithm": "Ring-LWE",
+          "n": 512,
+          "q": 24593,
+          "sigma": 4.0,
+          "noiseFiltering": true,
+          "inputFields": [
+            "name",
+            "email",
+            "phone",
+            "address",
+            "dob",
+            "gender",
+            "aadhaar_number"
+          ]
+        },
+        "citizen_info": {
+          "name": "Dholakiya Dixa Nareshbhai",
+          "email": "dixadholakiya@gmail.com",
+          "phone": "09409408516",
+          "address": "E-902,Ratnadeep Tower,",
+          "dob": "1124-02-11",
+          "gender": "Male",
+          "occupation": "wesdfghj"
+        },
+        "verificationMethod": [
+          {
+            "id": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb#key-1",
+            "type": "Ed25519VerificationKey2018",
+            "controller": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+            "publicKeyBase58": "~ef5d2368873c9fb90caedb9fd4438fd2558b4cba0769c68411638d4ad3e2a5d7"
+          }
+        ],
+        "service": [
+          {
+            "id": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb#aadhaar-kyc",
+            "type": "AadhaarKYCService",
+            "serviceEndpoint": "https://aadhaar-kyc.gov.in/verify"
+          }
+        ],
+        "created_at": "2026-02-26T21:45:02.851609",
+        "status": "ACTIVE"
+      },
+      "citizen_data": {
+        "name": "",
+        "email": "",
+        "phone": "",
+        "address": "",
+        "dob": "",
+        "gender": "",
+        "aadhaar_number": ""
+      },
+      "blockchain_info": {
+        "blockchain": "indy",
+        "ledger_type": "indy",
+        "transaction_hash": "indy_tx_56cf7fb2de3dfaaa3ad19ddf0603d4d5",
+        "block_number": 5
+      },
+      "verification_methods": [
+        {
+          "id": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb#key-1",
+          "type": "Ed25519VerificationKey2018",
+          "controller": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+          "public_key": "~ef5d2368873c9fb90caedb9fd4438fd2558b4cba0769c68411638d4ad3e2a5d7"
+        }
+      ],
+      "services": [
+        {
+          "id": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb#aadhaar-kyc",
+          "type": "AadhaarKYCService",
+          "service_endpoint": "https://aadhaar-kyc.gov.in/verify"
+        }
+      ],
+      "status": "ACTIVE",
+      "registered_at": "2026-02-26T21:45:02.957496",
+      "last_updated": "2026-02-26T21:45:02.957499",
+      "expires_at": "2036-02-24T21:45:02.957500",
       "metadata": {
         "created_by": "did_registry_system",
         "version": "2.0.0",

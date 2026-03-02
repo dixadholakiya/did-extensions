@@ -3,12 +3,12 @@
     "version": "2.0",
     "ledger_type": "rust_style_indy",
     "created_at": "2026-02-24T14:20:40.792298+00:00",
-    "last_updated": "2026-02-25T00:52:51.048197Z",
-    "total_transactions": 28,
-    "total_dids": 15,
+    "last_updated": "2026-02-26T22:03:12.835763Z",
+    "total_transactions": 32,
+    "total_dids": 16,
     "total_credentials": 0,
     "total_pools": 0,
-    "total_wallets": 15
+    "total_wallets": 16
   },
   "pools": {},
   "wallets": {
@@ -86,6 +86,11 @@
       "created_at": "2026-02-24T17:57:50.688794+00:00",
       "status": "ACTIVE",
       "key_hash": 4948022496625108733
+    },
+    "wallet_ed110cebf3012dbb": {
+      "created_at": "2026-02-26T16:15:02.954486+00:00",
+      "status": "ACTIVE",
+      "key_hash": 5254645023510814970
     }
   },
   "dids": {
@@ -177,6 +182,12 @@
       "did": "did:sdis:7e396d8a1893326b50c89:bd81f4091893303a1636b:284304f67ca7f1ce",
       "verkey": "~05bdf6bf0442b49f25ca79a50f8420ead8b90f22e31addf7ec8fca87f4c06dfb",
       "transaction_hash": "rust_txn_73534b860808bb3b",
+      "status": "ACTIVE"
+    },
+    "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb": {
+      "did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+      "verkey": "~ef5d2368873c9fb90caedb9fd4438fd2558b4cba0769c68411638d4ad3e2a5d7",
+      "transaction_hash": "rust_txn_233413f21373cdf9",
       "status": "ACTIVE"
     }
   },
@@ -734,6 +745,81 @@
       "hash": "ed7c50f5cbed3a6446015187b275fcdb0477fc96b6237aba64484e3041c8541d",
       "status": "COMMITTED",
       "seq_no": 28
+    },
+    "rust_txn_233413f21373cdf9": {
+      "id": "rust_txn_233413f21373cdf9",
+      "transaction_type": "NYM",
+      "data": {
+        "type": "NYM",
+        "dest": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "verkey": "~ef5d2368873c9fb90caedb9fd4438fd2558b4cba0769c68411638d4ad3e2a5d7",
+        "role": "TRUST_ANCHOR",
+        "timestamp": "2026-02-26T21:45:02.857229",
+        "ipfs_cid": "QmaLW6at9WZuANSpAbu391vgXVhx3WKzJX6m6f11oVmprf"
+      },
+      "timestamp": "2026-02-26T16:15:02.954446+00:00",
+      "hash": "233413f21373cdf9",
+      "status": "COMMITTED",
+      "seq_no": 29,
+      "signature": null
+    },
+    "rust_cred_c6f2190e50c6f4a4": {
+      "id": "rust_cred_c6f2190e50c6f4a4",
+      "transaction_type": "CREDENTIAL",
+      "data": {
+        "credential_id": "rust_cred_c6f2190e50c6f4a4",
+        "credential_type": "AADHAAR_KYC",
+        "citizen_did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "citizen_name": "Dholakiya Dixa Nareshbhai",
+        "aadhaar_number": "231456637685",
+        "kyc_level": "LEVEL_1",
+        "verified_at": "2026-02-26T22:02:47.902036",
+        "verified_by": "GOVERNMENT_PORTAL",
+        "status": "REVOKED",
+        "verifiable_credential_hash": "fc0daa7ce5da13395f29d569f11aa0fae7b6aa4bfb735eab35b48308e2266872",
+        "record_id": "AADHAAR_REC_AADHAAR_REQ_a4732c4ec6de79d2",
+        "ledger_id": "AADHAAR_KYC_LEDGER_ed110ceb",
+        "revoked_at": "2026-02-26T22:03:12.835763",
+        "revocation_reason": "eee"
+      },
+      "timestamp": "2026-02-26T22:02:47.910501Z",
+      "hash": "6680d397fae4a1f52c3ba0e14f21adfbde2969d4325cb7743bc398c48c760f08",
+      "status": "REVOKED",
+      "seq_no": 32
+    },
+    "revocation_4cccdb5df06480a8": {
+      "id": "revocation_4cccdb5df06480a8",
+      "transaction_type": "CREDENTIAL_REVOCATION",
+      "data": {
+        "citizen_did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "original_credential_id": "d0ce6370cf519d33e30778ec4b3138e81e932839e940e4911d56e23d09795a5f",
+        "revocation_reason": "time out",
+        "reason_code": "VC_ADMINISTRATIVE",
+        "revoked_by": "Government Official",
+        "revoked_at": "2026-02-26T22:01:30.873038",
+        "status": "COMMITTED"
+      },
+      "timestamp": "2026-02-26T22:01:30.873038Z",
+      "hash": "2f4a4e17ad2675f76c6196928fac39860e925ba0397c9456a689a65b7e98f21f",
+      "status": "COMMITTED",
+      "seq_no": 31
+    },
+    "revocation_73af290e64b1d95d": {
+      "id": "revocation_73af290e64b1d95d",
+      "transaction_type": "CREDENTIAL_REVOCATION",
+      "data": {
+        "citizen_did": "did:sdis:7d07be0f18933f9e66ef8:7fc6696618933b1ec0a1d:ed110cebf3012dbb",
+        "original_credential_id": "550dd8472f88e5bd6b4770221cb8283000069c9cb7f49e5e12caf3faf34830f5",
+        "revocation_reason": "eee",
+        "reason_code": "VC_ADMINISTRATIVE",
+        "revoked_by": "Government Official",
+        "revoked_at": "2026-02-26T22:03:12.835763",
+        "status": "COMMITTED"
+      },
+      "timestamp": "2026-02-26T22:03:12.835763Z",
+      "hash": "c8428cba99e5c5ccc0350a5299c7b30d935c369fa8d15e44b7d9631e1490110d",
+      "status": "COMMITTED",
+      "seq_no": 32
     }
   }
 }

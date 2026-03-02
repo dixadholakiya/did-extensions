@@ -114,15 +114,15 @@ class UnifiedServer:
     def start_sdis_resolver(self):
         """Start SDIS Public Resolver"""
         try:
-            from server.sdis_public_resolver_perfect import SDISPublicResolver
-            server = SDISPublicResolver()
+            from server.sdis_public_resolver_perfect import create_app
+            app = create_app()
             
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             self.loops.append(loop)
             
             async def run():
-                runner = web.AppRunner(server.app)
+                runner = web.AppRunner(app)
                 await runner.setup()
                 site = web.TCPSite(runner, '0.0.0.0', 8085)
                 await site.start()
@@ -138,8 +138,8 @@ class UnifiedServer:
     def start_auto_token_api(self):
         """Start Auto Identity Token API"""
         try:
-            from server.auto_identity_token_integration_server import AutoIdentityTokenIntegrationServer
-            server = AutoIdentityTokenIntegrationServer()
+            from server.auto_identity_token_integration_server import AutoIdentityTokenServer
+            server = AutoIdentityTokenServer()
             
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
@@ -148,9 +148,9 @@ class UnifiedServer:
             async def run():
                 runner = web.AppRunner(server.app)
                 await runner.setup()
-                site = web.TCPSite(runner, '0.0.0.0', 8080)
+                site = web.TCPSite(runner, '0.0.0.0', 8084)
                 await site.start()
-                print("✅ Auto Identity Token API: http://localhost:8080")
+                print("✅ Auto Identity Token API: http://localhost:8084")
                 while self.running:
                     await asyncio.sleep(1)
                 await runner.cleanup()
@@ -213,7 +213,7 @@ class UnifiedServer:
         print("🏛️ Government Portal:   http://localhost:8081")
         print("🔍 Ledger Explorer:     http://localhost:8083")
         print("🌐 SDIS Resolver:       http://localhost:8085")
-        print("🎫 Auto Token API:      http://localhost:8080")
+        print("🎫 Auto Token API:      http://localhost:8084")
         print("📋 VC Viewer:           http://localhost:8083/vc-viewer")
         print()
         print("=" * 70)
