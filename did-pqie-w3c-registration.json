@@ -1,8 +1,10 @@
 {
-    "name": "pqie",
+    "method": "pqie",
     "status": "registered",
     "specification": "https://dixadholakiya.github.io/pqie-did-spec/",
     "contactName": "PQIE Research Group",
     "contactEmail": "dixadholakiya@gmail.com",
-    "verifiableDataRegistry": "Hyperledger Indy + IPFS"
+    "verifiableDataRegistry": "Hyperledger Indy + IPFS",
+    "identifier": "Post-Quantum Identity Ecosystem",
+    "description": "A decentralized identifier method leveraging Ring-LWE Lattice Cryptography to secure identities against both classical and quantum computing threats."
 }
