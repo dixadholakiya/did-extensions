@@ -6,5 +6,5 @@
   "contactEmail": "dixadholakiya@gmail.com",
   "contactWebsite": "https://dixadholakiya.github.io/pqie-did-spec/",
   "specification": "https://dixadholakiya.github.io/pqie-did-spec/",
-  "resolverEndpoint": "https://pqie-resolver.onrender.com/1.0/identifiers/"
+  "resolverEndpoint": "https://pqie-resolver-production.up.railway.app/1.0/identifiers/"
 }
